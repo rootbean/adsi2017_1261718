@@ -6,6 +6,7 @@ import co.edu.sena.adsi.rest.auth.DigestUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.List;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -35,6 +36,7 @@ public class UsuarioREST {
      * @return lista de usuarios
      */
     @GET
+    @RolesAllowed({"ADMIN"})
     public List<Usuario> findAll() {
         return usuarioEJB.findAll();
     }
@@ -55,7 +57,7 @@ public class UsuarioREST {
      * Crear un usuario
      *
      * @param usuario
-     * @return 
+     * @return
      */
     @POST
     public Response create(Usuario usuario) {
@@ -66,13 +68,13 @@ public class UsuarioREST {
             if (usuarioEJB.findByEmail(usuario.getEmail()) == null) {
                 if (usuarioEJB.findByNumDocumento(usuario
                         .getNumDocumento()) == null) {
-                    
+
                     usuario.setPassword(
                             DigestUtil
-                            .cifrarPassword(usuario.getPassword()));
-                   
+                                    .cifrarPassword(usuario.getPassword()));
+
                     usuarioEJB.create(usuario);
-                    
+
                     return Response.status(Response.Status.CREATED)
                             .entity(gson.toJson("El usuario se registró correctamente"))
                             .build();
@@ -102,11 +104,23 @@ public class UsuarioREST {
      *
      * @param id
      * @param usuario
+     * @return 
      */
     @PUT
     @Path("{id}")
-    public void edit(@PathParam("id") Integer id, Usuario usuario) {
-        usuarioEJB.edit(usuario);
+    public Response edit(@PathParam("id") Integer id, Usuario usuario) {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        Gson gson = gsonBuilder.create();
+        try {
+            usuarioEJB.edit(usuario);
+            return Response.status(Response.Status.CREATED)
+                    .entity(gson.toJson("El usuario se actualizó correctamente"))
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(gson.toJson("Error al actualizar el usuario!."))
+                    .build();
+        }
     }
 
 }

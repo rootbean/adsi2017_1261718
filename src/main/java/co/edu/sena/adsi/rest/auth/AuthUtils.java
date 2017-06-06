@@ -16,7 +16,7 @@ import org.joda.time.DateTime;
 
 /**
  *
- * @author Ruber?
+ * @author ruber19
  */
 public final class AuthUtils {
 
